@@ -61,6 +61,7 @@ class Cruiser(Ship):
 
 
 class Battleship(Ship):
+
     def __init__(self):
         super().__init__("Battleship", 4)
 
@@ -190,15 +191,31 @@ class BattleshipsGame(Game):
 
         player = self.get_player_by_id(discord_id)
 
+        row_to_emoji: tuple = (
+            ":regional_indicator_a:", ":regional_indicator_b:", ":regional_indicator_c:",
+            ":regional_indicator_d:", ":regional_indicator_e:", ":regional_indicator_f:",
+            ":regional_indicator_g:", ":regional_indicator_h:", ":regional_indicator_i:",
+            ":regional_indicator_j:"
+        )
+
+        column_to_emoji: tuple = (
+            ":heavy_multiplication_x:", ":zero:", ":one:", ":two:", ":three:", ":four:",
+            ":five:", ":six:", ":seven:", ":eight:", ":nine:"
+        )
+
         txt_display = ""
 
+        for emoji in column_to_emoji:
+            txt_display += emoji
+
         for i in range(10):
+
+            txt_display += "\n"
+            txt_display += row_to_emoji[i]
 
             for j in range(10):
 
                 txt_display += f"{player.fleet[i * 10 + j]}"
-
-            txt_display += "\n"
 
         return txt_display
 
@@ -215,7 +232,6 @@ class BattleshipsGame(Game):
         return discord_id == self.next.discord_id
 
     def shoot(self, row: str, column: int) -> tuple[str, bool]:
-        column -= 1  # list index starts at 0, so the column is offset by 1 to make up for that
 
         position = self._row_to_number[row] + column
 
