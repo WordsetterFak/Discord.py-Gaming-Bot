@@ -156,9 +156,6 @@ class BattleshipsPlayer(Player):
 
 class BattleshipsGame(Game):
 
-    _MAX = 2
-    _NAME = "Battleship"
-
     _NUMBER_OF_STARTING_SHIPS = 17
     _TIMEOUT = 60  # seconds
 
@@ -167,7 +164,7 @@ class BattleshipsGame(Game):
     }
 
     def __init__(self, players: list[int]):
-        super().__init__()
+        super().__init__("Battleships", 2, 2)
 
         self.player_ids: list[int] = players
         self.players = [BattleshipsPlayer(self.player_ids[0]), BattleshipsPlayer(self.player_ids[1])]
