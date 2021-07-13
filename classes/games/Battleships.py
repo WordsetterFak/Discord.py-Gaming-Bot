@@ -175,12 +175,14 @@ class BattleshipsGame(Game):
 
         self.timer: float = 0  # keep track of time between rounds
         self.total_time: float = time()
+        self.total_rounds: int = 0
         self.ongoing = False
 
     def other_player(self):
         return self.players[0] if self.next != self.players[0] else self.players[1]
 
     def next_round(self):
+        self.total_rounds += 1
         self.timer = time()
         self.next = self.other_player()
 
@@ -268,12 +270,7 @@ class BattleshipsGame(Game):
             return player.rerolls
 
     def get_player_by_id(self, discord_id: int) -> BattleshipsPlayer:
-
-        for player in self.players:
-
-            if player.discord_id == discord_id:
-
-                return player
+        return self.players[0] if discord_id == self.players[0].discord_id else self.players[1]
 
     def conclude(self):
         pass
