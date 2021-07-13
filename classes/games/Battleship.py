@@ -3,9 +3,6 @@ from classes.Player import Player
 import random
 
 
-EMOJIS = (":blue_square:", )
-
-
 class Tiles:
 
     def __init__(self, emoji: str):
@@ -19,6 +16,12 @@ class Water(Tiles):
 
     def __init__(self):
         super().__init__(":blue_square:")
+
+
+class HitWater(Tiles):
+
+    def __init__(self):
+        super().__init__(":radio_button:")
 
 
 class ExplodedShip(Tiles):
@@ -71,11 +74,11 @@ class AircraftCarrier(Ship):
 class BattleshipPlayer(Player):
 
     def __init__(self, discord_id: int):
-        super().__init__()
-        self.discord_id: int = discord_id
-        self.fleet: list[Tiles] = []
+        super().__init__(discord_id)
         self.kills: int = 0
         self.rerolls: int = 3
+        self.fleet: list[Tiles] = self.build_fleet()
+        self.opponent = None
 
     def build_fleet(self):
 
@@ -83,8 +86,11 @@ class BattleshipPlayer(Player):
         expected_ships: int = 0
 
         def place_random(ship_to_be_placed: Ship):
+
             while True:
+
                 fleet_copy = fleet.copy()
+
                 core = random.randint(0, 99)
                 fleet_copy[core] = ship_to_be_placed
 
@@ -102,12 +108,15 @@ class BattleshipPlayer(Player):
                     next_placement_choices = []
 
                     if orientation == "vertical":
+
                         if minus_edge > 9:
                             next_placement_choices.append("minus_edge")
 
                         if plus_edge < 90:
                             next_placement_choices.append("plus_edge")
+
                     else:  # horizontal
+
                         if minus_edge % 10 != 0:
                             next_placement_choices.append("minus_edge")
 
@@ -117,9 +126,12 @@ class BattleshipPlayer(Player):
                     next_placement = random.choice(next_placement_choices)
 
                     if next_placement == "minus_edge":
+
                         minus_edge -= adjust
                         fleet_copy[minus_edge] = ship_to_be_placed
+
                     else:
+
                         plus_edge += adjust
                         fleet_copy[plus_edge] = ship_to_be_placed
 
@@ -130,7 +142,6 @@ class BattleshipPlayer(Player):
             expected_ships += ship.size
             fleet = place_random(ship)
 
-        self.fleet = fleet
         return fleet
 
 
