@@ -1,3 +1,0 @@
-
-class BattleshipPlayer:
-    pass
