@@ -156,9 +156,6 @@ class BattleshipsPlayer(Player):
 
 class BattleshipsGame(Game):
 
-    _player_to_game: dict = {}  # allows player to change fleet in dms
-    _channel_to_game: dict = {}
-
     _MAX = 2
     _NAME = "Battleship"
 
@@ -205,6 +202,9 @@ class BattleshipsGame(Game):
     def timeout(self) -> bool:
         return time() - self.timer > self._TIMEOUT
 
+    def is_turn(self, discord_id: int) -> bool:
+        return discord_id == self.next.discord_id
+
     def shoot(self, row: str, column: int) -> tuple[str, bool]:
         column -= 1  # list index starts at 0, so the column is offset by 1 to make up for that
 
@@ -213,16 +213,16 @@ class BattleshipsGame(Game):
         other_player = self.other_player()
 
         hit = other_player.fleet[position]
-        hit_pos = str(hit)
+        hit_name = str(hit)
         destroyed = False
 
         if isinstance(hit, Ship):
+
             destroyed = hit.hit()
             other_player.fleet[position] = ExplodedShip()
+
         elif isinstance(hit, Water):
+
             other_player.fleet[position] = DisturbedWater()
 
-        return hit_pos, destroyed
-
-    def is_turn(self, discord_id: int) -> bool:
-        return discord_id == self.next.discord_id
+        return hit_name, destroyed

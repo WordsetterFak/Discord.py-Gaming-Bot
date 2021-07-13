@@ -6,12 +6,12 @@ from discord import Guild
 import json
 
 
-TOKEN = "TOKEN"  # discord bot TOKEN goes here
+TOKEN = "ODY0MjIxMDAxNDMyNjk0ODA0.YOyShw.5bur00pMopAdYAVmkkeWVGy8Zm8"  # discord bot TOKEN goes here
 
 
 def get_prefix(bot_obj, message: Context) -> str:
     try:
-        with open("files/bot-stuff/prefixes.json", "r") as f:
+        with open("data/bot/prefixes.json", 'r') as f:
             prefixes = json.load(f)
         return prefixes[str(message.guild.id)]
     except AttributeError:
