@@ -40,23 +40,23 @@ async def on_command_error(ctx: Context, error: Exception):
 
 @client.event
 async def on_guild_join(guild: Guild):
-    with open("files/bot-stuff/prefixes.json", 'r') as f:
+    with open("data/bot/prefixes.json", 'r') as f:
         prefixes = json.load(f)
 
     prefixes[str(guild.id)] = "!"
 
-    with open("files/bot-stuff/prefixes.json", 'w') as f:
+    with open("data/bot/prefixes.json", 'w') as f:
         json.dump(prefixes, f, indent=4)
 
 
 @client.event
 async def on_guild_remove(guild: Guild):
-    with open("files/bot-stuff/prefixes.json", 'r') as f:
+    with open("data/bot/prefixes.json", 'r') as f:
         prefixes = json.load(f)
 
     prefixes.pop(str(guild.id))
 
-    with open("files/bot-stuff/prefixes.json", 'w') as f:
+    with open("data/bot/prefixes.json", 'w') as f:
         json.dump(prefixes, f, indent=4)
 
 
@@ -67,12 +67,12 @@ async def prefix(ctx: Context, new_prefix: str):
         await ctx.reply("**You cannot change the prefix outside of a server!**")
         return
 
-    with open("files/bot-stuff/prefixes.json", 'r') as f:
+    with open("data/bot/prefixes.json", 'r') as f:
         prefixes = json.load(f)
 
     prefixes[str(ctx.guild.id)] = new_prefix
 
-    with open("files/bot-stuff/prefixes.json", 'w') as f:
+    with open("data/bot/prefixes.json", 'w') as f:
         json.dump(prefixes, f, indent=4)
 
     await ctx.send(f"**Prefix changed to {new_prefix}**")
@@ -80,8 +80,8 @@ async def prefix(ctx: Context, new_prefix: str):
 
 @prefix.error
 async def prefix_error(ctx: Context, error: Exception):
-    await ctx.reply("**Incorrect usage!**\n"
-                    f"**Example: {get_prefix(client, ctx)}prefix .**")
+    await ctx.reply("**Incorrect usage!\n"
+                    f"Example: {get_prefix(client, ctx)}prefix .**")
 
 
 client.run(TOKEN)  # bot loop
