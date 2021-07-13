@@ -4,6 +4,7 @@ from discord import Client, User, Embed, Colour
 from classes.Player import Player
 from classes.Game import Game
 from classes.games.Battleships import BattleshipsGame
+from time import time
 import asyncio
 
 
@@ -97,9 +98,20 @@ class BattleshipsCog(commands.Cog):
                         f" if you are not satisfied.**"
             )
 
+            await asyncio.sleep(20)
+
+            game.timer = time()
+            game.ongoing = True
+
+            await self.display(ctx, game)  # send the first message
+
         else:
 
             await ctx.reply(f"**{user.mention} turned down/did not respond the challenge!**")
+
+    @commands.command(aliases=["S", "shoot", "SHOOT", "Shoot", "sHOOT"])
+    async def s(self, pos: str):
+        pass  # TODO
 
     @commands.command(aliases=["Breroll", "BREROLL", "bREROLL"])
     async def breroll(self, ctx: Context):
@@ -127,6 +139,27 @@ class BattleshipsCog(commands.Cog):
 
         await ctx.author.send(
             content=f"Reroll successful, you have {response} rerolls left!\n{display}"
+        )
+
+    @commands.command(aliases=["Timeout", "TIMEOUT", "tIMEOUT"])
+    async def timeout(self, ctx: Context):
+
+        try:  # TODO
+
+            game = self._player_to_game[str(ctx.author.id)]
+
+        except KeyError:
+
+            await ctx.reply("**You have not joined any Battleships game!**")
+            return
+
+    @classmethod
+    async def display(cls, ctx: Context, game: BattleshipsGame):
+
+        fleet_dis = game.display()
+
+        await ctx.send(
+            content=f"Its <@!{game.next.discord_id}>'s turn!\n{fleet_dis}"
         )
 
 

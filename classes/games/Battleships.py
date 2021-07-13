@@ -186,7 +186,7 @@ class BattleshipsGame(Game):
     def display(self, discord_id: [int, None] = None) -> str:
 
         if discord_id is None:
-            discord_id = self.next.discord_id
+            discord_id = self.other_player().discord_id
 
         player = self.get_player_by_id(discord_id)
 
@@ -258,3 +258,6 @@ class BattleshipsGame(Game):
             if player.discord_id == discord_id:
 
                 return player
+
+    def conclude(self):
+        pass
