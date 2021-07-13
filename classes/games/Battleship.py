@@ -33,6 +33,15 @@ class Ship(Tiles):
         super().__init__(":ship:")
         self.name = name
         self.size = size
+        self.remaining = size
+
+    def hit(self) -> bool:
+        self.remaining -= 1
+
+        if self.remaining <= 0:
+            return True  # Ship was completely destroyed
+
+        return False
 
 
 class Destroyer(Ship):
@@ -71,46 +80,58 @@ class BattleshipPlayer(Player):
     def build_fleet(self):
 
         fleet: list[Tiles] = [Water()] * 100
+        expected_ships: int = 0
 
-        def place_random(ship: Ship, fleet_copy: list[Tiles]):
-            core = random.randint(0, 99)
-            placed_parts = 0
+        def place_random(ship_to_be_placed: Ship):
+            while True:
+                fleet_copy = fleet.copy()
+                core = random.randint(0, 99)
+                fleet_copy[core] = ship_to_be_placed
 
-            orientation = random.choice(["horizontal", "vertical"])
+                orientation = random.choice(["horizontal", "vertical"])
 
-            if orientation == "vertical":
-                adjust = 10
-                upper_edge = core
-                lower_edge = core
+                if orientation == "vertical":
+                    adjust = 10  # next vertical element
+                else:
+                    adjust = 1  # next horizontal element
 
-                for _ in range(ship.size):
+                minus_edge = core  # upper edge or left edge depending on orientation
+                plus_edge = core  # lower edge or right edge depending on orientation
+
+                for _ in range(ship.size - 1):  # the -1 represents the core that has already been placed
                     next_placement_choices = []
 
-                    if upper_edge not in range(10):
-                        next_placement_choices.append("upper_edge")
+                    if orientation == "vertical":
+                        if minus_edge > 9:
+                            next_placement_choices.append("minus_edge")
 
-                    if lower_edge not in range(90, 100):
-                        next_placement_choices.append("lower_edge")
+                        if plus_edge < 90:
+                            next_placement_choices.append("plus_edge")
+                    else:  # horizontal
+                        if minus_edge % 10 != 0:
+                            next_placement_choices.append("minus_edge")
+
+                        if (plus_edge + 1) % 10 != 0:
+                            next_placement_choices.append("plus_edge")
 
                     next_placement = random.choice(next_placement_choices)
 
-                    if next_placement == "upper_edge":
-                        fleet_copy[core - adjust] = ship
-                        upper_edge = core - adjust
+                    if next_placement == "minus_edge":
+                        minus_edge -= adjust
+                        fleet_copy[minus_edge] = ship_to_be_placed
                     else:
-                        fleet_copy[core + adjust] = ship
-                        lower_edge = core + adjust
-            else:
-                adjust = 1
-                right_edge = core  # TODO
-                left_edge = core
+                        plus_edge += adjust
+                        fleet_copy[plus_edge] = ship_to_be_placed
 
-            if placed_parts != ship.size:  # ship placement collided with pre-existing ship
-                place_random(ship, fleet.copy())
+                if len([x for x in fleet_copy if isinstance(x, Ship)]) == expected_ships:  # no ship collision occurred
+                    return fleet_copy
 
-            return fleet_copy
+        for ship in [AircraftCarrier(), Dreadnought(), Cruiser(), Cruiser(), Destroyer()]:
+            expected_ships += ship.size
+            fleet = place_random(ship)
 
         self.fleet = fleet
+        return fleet
 
 
 class Battleship(Game):
