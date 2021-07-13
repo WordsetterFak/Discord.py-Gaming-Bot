@@ -1,5 +1,6 @@
 from classes.Game import Game
 from classes.Player import Player
+from time import time
 import random
 
 
@@ -18,8 +19,8 @@ class Water(Tiles):
         super().__init__(":blue_square:")
 
 
-class HitWater(Tiles):
-
+class DisturbedWater(Tiles):
+    # a water tile, that was hit by a shot
     def __init__(self):
         super().__init__(":radio_button:")
 
@@ -77,14 +78,13 @@ class BattleshipsPlayer(Player):
         self.kills: int = 0
         self.rerolls: int = 3
         self.fleet: list[Tiles] = self.build_fleet()
-        self.opponent = None
 
     def build_fleet(self):
 
         fleet: list[Tiles] = [Water()] * 100
         expected_ships: int = 0
 
-        def place_random(ship_to_be_placed: Ship):
+        def place(ship_to_be_placed: Ship):
 
             while True:
 
@@ -140,18 +140,89 @@ class BattleshipsPlayer(Player):
         for ship in [AircraftCarrier(), Battleship(), Cruiser(), Cruiser(), Destroyer()]:
 
             expected_ships += ship.size
-            fleet = place_random(ship)
+            fleet = place(ship)
 
         return fleet
+
+    def reroll(self) -> int:
+        if self.rerolls < 1:
+            return 0
+
+        self.fleet: list[Tiles] = self.build_fleet()
+
+        self.rerolls -= 1
+        return self.rerolls
 
 
 class BattleshipsGame(Game):
 
-    _games: dict = {}
+    _player_to_game: dict = {}  # allows player to change fleet in dms
+    _channel_to_game: dict = {}
+
     _MAX = 2
     _NAME = "Battleship"
+
     _NUMBER_OF_STARTING_SHIPS = 17
+    _TIMEOUT = 60  # seconds
+
+    _row_to_number: dict[str, int] = {  # convert row  to number (ex. b -> 10)
+        "a": 0, "b": 10, "c": 20, "d": 30, "e": 40, "f": 50, "g": 60, "h": 70, "i": 80, "j": 90
+    }
 
     def __init__(self, players: list[int]):
         super().__init__()
+
         self.player_ids: list[int] = players
+        self.players = [BattleshipsPlayer(self.player_ids[0]), BattleshipsPlayer(self.player_ids[1])]
+
+        self.next = self.players[0]
+        self.winner: [BattleshipsPlayer, None] = None
+
+        self.timer: float = 0  # keep track of time between rounds
+        self.total_time: float = time()
+
+    def other_player(self):
+        return self.players[0] if self.next != self.players[0] else self.players[1]
+
+    def next_round(self):
+        self.timer = time()
+        self.next = self.other_player()
+
+    def display(self) -> str:
+        txt_display = ""
+
+        for i in range(100):
+            txt_display += f"{self.next.fleet[i:i+10]}"
+
+        return txt_display
+
+    def check_win(self) -> bool:
+        if self.next.kills >= 17:
+            return True
+
+        return False
+
+    def timeout(self) -> bool:
+        return time() - self.timer > self._TIMEOUT
+
+    def shoot(self, row: str, column: int) -> tuple[str, bool]:
+        column -= 1  # list index starts at 0, so the column is offset by 1 to make up for that
+
+        position = self._row_to_number[row] + column
+
+        other_player = self.other_player()
+
+        hit = other_player.fleet[position]
+        hit_pos = str(hit)
+        destroyed = False
+
+        if isinstance(hit, Ship):
+            destroyed = hit.hit()
+            other_player.fleet[position] = ExplodedShip()
+        elif isinstance(hit, Water):
+            other_player.fleet[position] = DisturbedWater()
+
+        return hit_pos, destroyed
+
+    def is_turn(self, discord_id: int) -> bool:
+        return discord_id == self.next.discord_id
