@@ -3,14 +3,14 @@ from discord.ext.commands import Context
 from discord import Client, User, Embed, Colour
 from classes.Player import Player
 from classes.Game import Game
-from classes.games.BattleshipsGame import BattleshipsGame, BattleshipsPlayer
+from classes.games.Battleships import BattleshipsGame
 import asyncio
 
 
 class BattleshipsCog(commands.Cog):
 
-    _player_to_game: dict = {}  # allows player to change fleet in dms
-    _channel_to_game: dict = {}
+    _player_to_game: dict[str, BattleshipsGame] = {}  # allows player to change fleet in dms
+    _channel_to_game: dict[str, BattleshipsGame] = {}
 
     def __init__(self, client: Client):
         self.client: Client = client
@@ -34,7 +34,7 @@ class BattleshipsCog(commands.Cog):
             await ctx.reply(f"**{user.mention} is in another game!**")
             return
 
-        embed = Embed(
+        embed = Embed(  # TODO
             title="Battleships In-Game Commands📝",
             color=Colour.dark_blue()
         )
@@ -91,9 +91,43 @@ class BattleshipsCog(commands.Cog):
             self._player_to_game[str(ctx.author.id)] = game
             self._player_to_game[str(user.id)] = game
 
+            await ctx.send(
+                content=f"{ctx.author.mention}|{user.mention}\n"
+                        f"**Game will begin in 20 seconds, in the meantime you can change your fleet up to 3 times,"
+                        f" if you are not satisfied.**"
+            )
+
         else:
 
             await ctx.reply(f"**{user.mention} turned down/did not respond the challenge!**")
+
+    @commands.command(aliases=["Breroll", "BREROLL", "bREROLL"])
+    async def breroll(self, ctx: Context):
+
+        try:
+
+            game = self._player_to_game[str(ctx.author.id)]
+
+        except KeyError:
+
+            await ctx.reply("**You have not joined any Battleships game!**")
+            return
+
+        response = game.change_fleet(ctx.author.id)
+
+        if response == -2:
+            await ctx.reply("**Game is ongoing, you cannot change your fleet!**")
+            return
+
+        elif response == -1:
+            await ctx.reply("**You have run out of rerolls!**")
+            return
+
+        display = game.display(ctx.author.id)
+
+        await ctx.author.send(
+            content=f"Reroll successful, you have {response} rerolls left!\n{display}"
+        )
 
 
 def setup(client):

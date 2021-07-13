@@ -174,6 +174,7 @@ class BattleshipsGame(Game):
 
         self.timer: float = 0  # keep track of time between rounds
         self.total_time: float = time()
+        self.ongoing = False
 
     def other_player(self):
         return self.players[0] if self.next != self.players[0] else self.players[1]
@@ -182,11 +183,22 @@ class BattleshipsGame(Game):
         self.timer = time()
         self.next = self.other_player()
 
-    def display(self) -> str:
+    def display(self, discord_id: [int, None] = None) -> str:
+
+        if discord_id is None:
+            discord_id = self.next.discord_id
+
+        player = self.get_player_by_id(discord_id)
+
         txt_display = ""
 
-        for i in range(100):
-            txt_display += f"{self.next.fleet[i:i+10]}"
+        for i in range(10):
+
+            for j in range(10):
+
+                txt_display += f"{player.fleet[i * 10 + j]}"
+
+            txt_display += "\n"
 
         return txt_display
 
@@ -223,3 +235,26 @@ class BattleshipsGame(Game):
             other_player.fleet[position] = DisturbedWater()
 
         return hit_name, destroyed
+
+    def change_fleet(self, discord_id: int) -> int:
+
+        if self.ongoing:
+            return -2  # game is ongoing, fleets cannot be changed
+
+        player = self.get_player_by_id(discord_id)
+
+        reroll_successful = player.reroll()
+
+        if not reroll_successful:
+            return -1
+
+        else:
+            return player.rerolls
+
+    def get_player_by_id(self, discord_id: int) -> BattleshipsPlayer:
+
+        for player in self.players:
+
+            if player.discord_id == discord_id:
+
+                return player
