@@ -59,8 +59,7 @@ class Cruiser(Ship):
         super().__init__("Cruiser", 3)
 
 
-class Dreadnought(Ship):
-    # named Dreadnought, since the game class is named Battleship
+class Battleship(Ship):
     def __init__(self):
         super().__init__("Battleship", 4)
 
@@ -71,7 +70,7 @@ class AircraftCarrier(Ship):
         super().__init__("Aircraft Carrier", 5)
 
 
-class BattleshipPlayer(Player):
+class BattleshipsPlayer(Player):
 
     def __init__(self, discord_id: int):
         super().__init__(discord_id)
@@ -138,14 +137,15 @@ class BattleshipPlayer(Player):
                 if len([x for x in fleet_copy if isinstance(x, Ship)]) == expected_ships:  # no ship collision occurred
                     return fleet_copy
 
-        for ship in [AircraftCarrier(), Dreadnought(), Cruiser(), Cruiser(), Destroyer()]:
+        for ship in [AircraftCarrier(), Battleship(), Cruiser(), Cruiser(), Destroyer()]:
+
             expected_ships += ship.size
             fleet = place_random(ship)
 
         return fleet
 
 
-class Battleship(Game):
+class BattleshipsGame(Game):
 
     _games: dict = {}
     _MAX = 2
