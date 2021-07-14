@@ -6,7 +6,7 @@ from discord import Guild
 import json
 
 
-TOKEN = "TOKEN"  # discord bot TOKEN goes here
+TOKEN = open("TOKEN.txt", "r").read()  # discord bot TOKEN goes here
 
 
 def get_prefix(bot_obj, message: Context) -> str:
