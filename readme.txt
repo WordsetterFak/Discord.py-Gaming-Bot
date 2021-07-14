@@ -1,9 +1,9 @@
 An open source discord.py bot with various discord minigames 🎮
 
 Game List 📜:
-    -Battleships(WIP) 🚢
+    -Battleships 🚢
+    -TicTacToe(Planned) ❌
     -Uno(Planned) 🎴
-    -TicTacToe ❌
     +More ➕
 
 Requirements:
