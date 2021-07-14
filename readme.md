@@ -29,5 +29,9 @@
 ## Usage⚙️:
     Type in your token in TOKEN.txt and you should be good to go
     Default bot image is provided in bot/boticon.png
-    
+
+## Images🖼️:
+![Markdown Logo]
+(https://github.com/Wordsetter0/Discord.py-Gaming-Bot/blob/master/images/repo-images/bbshipimage1.png)
+
  
