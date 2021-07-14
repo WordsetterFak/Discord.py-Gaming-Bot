@@ -4,6 +4,7 @@ from discord import Client, User, Embed, Colour
 from classes.Player import Player
 from classes.Game import Game
 import classes.games.Battleships as bb
+from main import get_prefix
 from time import time
 from re import search as re_search
 import asyncio
@@ -11,7 +12,7 @@ import asyncio
 
 class BattleshipsGameCog(commands.Cog):
 
-    _player_to_game: dict[str, bb.BattleshipsGame] = {}  # allows player to change fleet in dms
+    _player_to_game: dict[str, bb.BattleshipsGame] = {}  # allows player to use some commands in dms
     _channel_to_game: dict[str, bb.BattleshipsGame] = {}
 
     def __init__(self, client: Client):
@@ -29,7 +30,7 @@ class BattleshipsGameCog(commands.Cog):
             return
 
         if ctx.channel.id in Game.occupied_channels:
-            await ctx.reply("**This channel is occupied!**")
+            await ctx.reply("**This channel is occupied, by another game!**")
             return
 
         if ctx.author.id in Player.occupied_players:
@@ -40,9 +41,22 @@ class BattleshipsGameCog(commands.Cog):
             await ctx.reply(f"**{user.mention} is in another game!**")
             return
 
-        embed = Embed(  # TODO
+        embed = Embed(
             title="Battleships In-Game Commands📝",
             color=Colour.dark_blue()
+        )
+
+        prefix = get_prefix(self.client, ctx)
+
+        embed.add_field(
+            name="In-Game Commands ⚙️",
+            value=f"**{prefix}bchallenge @user** (challenge someone to a battleships game)\n"
+                  f"**{prefix}s pos** (fire your guns at pos) (Ex -> {prefix}s j6\n"
+                  f"**{prefix}breroll** (change your fleet, up to 3 times)\n"
+                  f"**{prefix}btimeout** (win, if your opponent has not played for more than 120 seconds)\n"
+                  f"**{prefix}myfleet** (view your fleet)\n"
+                  f"**{prefix}bsurrender** (surrender the game)\n"
+                  f"**{prefix}btie** (propose a tie, if both of you agree the game ends in a tie)\n"
         )
 
         message = await ctx.send(
@@ -105,7 +119,7 @@ class BattleshipsGameCog(commands.Cog):
                 player_discord = await self.client.fetch_user(player)
 
                 await player_discord.send(
-                    content=f"Your fleet!(3 rerolls available)\n{display}"
+                    content=f"**Your fleet!(3 rerolls available)**\n{display}"
                 )
 
             await ctx.send(
@@ -130,16 +144,24 @@ class BattleshipsGameCog(commands.Cog):
 
         try:
 
-            game = self._player_to_game[str(ctx.author.id)]
+            game = self._channel_to_game[str(ctx.channel.id)]
+
+            if ctx.author.id not in game.player_ids:
+
+                await ctx.reply("**You are not part of this Battleships game!**")
+                return
 
         except KeyError:
 
-            await ctx.reply("**You have not joined any Battleships game!**")
+            await ctx.reply("**There is no Battleships game running in this channel!**")
             return
 
-        pos = pos.lower()
+        if not game.ongoing:
 
-        if ctx.author.id != game.next.discord_id:
+            await ctx.reply("**Game has not yet started! Please wait**")
+            return
+
+        if ctx.author.id != game.current_round_player.discord_id:
 
             await ctx.reply("**It is not your turn!**")
             return
@@ -149,6 +171,8 @@ class BattleshipsGameCog(commands.Cog):
             await ctx.reply("**Invalid coordinates(wrong size)\n"
                             "Example: a2**")
             return
+
+        pos = pos.lower()
 
         pattern1 = "[a-j]+[0-9]"
         pattern2 = "[0-9]+[a-j]"
@@ -183,13 +207,15 @@ class BattleshipsGameCog(commands.Cog):
 
             if game.check_win():
 
-                await self.conclude(ctx, game)
+                await ctx.send(f"**Admiral:anchor: <@!{game.current_round_player.discord_id}>"
+                               f" defeated admiral:anchor: <@!{game.next_player().discord_id}>!**")
+                self.delete_game(ctx, game)
 
             else:
 
                 game.next_round()
 
-            await self.display(ctx, game)
+                await self.display(ctx, game)
 
         elif isinstance(hit, bb.Water):
 
@@ -232,25 +258,40 @@ class BattleshipsGameCog(commands.Cog):
         display = game.display(ctx.author.id)
 
         await ctx.author.send(
-            content=f"Reroll successful, you have {response} rerolls left!\n{display}"
+            content=f"**Reroll successful, you have {response} rerolls left!**\n{display}"
         )
 
     @commands.command(aliases=["Timeout", "TIMEOUT", "tIMEOUT"])
     async def btimeout(self, ctx: Context):
 
-        try:  # TODO
+        try:
 
-            game = self._player_to_game[str(ctx.author.id)]
+            game = self._channel_to_game[str(ctx.channel.id)]
+
+            if ctx.author.id not in game.player_ids:
+
+                await ctx.reply("**You are not part of this Battleships game!**")
+                return
 
         except KeyError:
 
-            await ctx.reply("**You have not joined any Battleships game!**")
+            await ctx.reply("**There is no Battleships game running in this channel!**")
             return
 
-    @commands.command()
+        if time() - game.timer > game.TIMEOUT:
+
+            game.current_round_player = game.next_player()
+
+            await ctx.send(f"**Admiral:anchor: <@!{game.current_round_player}> defeated "
+                           f"admiral:anchor: <@!{game.next_player().discord_id}> due to "
+                           f"inactivity of the latter!**")
+
+            self.delete_game(ctx, game)
+
+    @commands.command(aliases=["Myfleet", "MYFLEET", "mYFLEET"])
     async def myfleet(self, ctx: Context):
 
-        try:  # TODO
+        try:
 
             game = self._player_to_game[str(ctx.author.id)]
 
@@ -259,29 +300,72 @@ class BattleshipsGameCog(commands.Cog):
             await ctx.reply("**You have not joined any Battleships game!**")
             return
 
-    @commands.command()
+        fleet_dis = game.display(discord_id=ctx.author.id, view_opponent_fleet=False)
+
+        await ctx.author.send(
+            content=f"**Its <@!{game.current_round_player.discord_id}>'s turn!(Your fleet:anchor:)**\n"
+                    f"{fleet_dis}"
+        )
+
+    @commands.command(aliases=["Bsurrender", "BSURRENDER", "bSURRENDER"])
     async def bsurrender(self, ctx: Context):
 
-        try:  # TODO
+        try:
 
-            game = self._player_to_game[str(ctx.author.id)]
+            game = self._channel_to_game[str(ctx.channel.id)]
+
+            if ctx.author.id not in game.player_ids:
+                await ctx.reply("**You are not part of this Battleships game!**")
+                return
 
         except KeyError:
 
-            await ctx.reply("**You have not joined any Battleships game!**")
+            await ctx.reply("**There is no Battleships game running in this channel!**")
             return
 
-    @commands.command()
+        game.ongoing = False
+
+        defeated = game.get_player_by_id(ctx.author.id)
+        winner = [x for x in game.player_ids if x != defeated.discord_id][0]
+
+        await ctx.send(f"**Admiral:anchor:<@!{defeated.discord_id}> surrendered to admiral:anchor:<@!{winner}>**")
+
+        self.delete_game(ctx, game)
+
+    @commands.command(aliases=["Btie", "BTIE", "bTIE"])
     async def btie(self, ctx: Context):
 
-        try:  # TODO
+        try:
 
-            game = self._player_to_game[str(ctx.author.id)]
+            game = self._channel_to_game[str(ctx.channel.id)]
+
+            if ctx.author.id not in game.player_ids:
+                await ctx.reply("**You are not part of this Battleships game!**")
+                return
 
         except KeyError:
 
-            await ctx.reply("**You have not joined any Battleships game!**")
+            await ctx.reply("**There is no Battleships game running in this channel!**")
             return
+
+        proposed_tie_player = game.get_player_by_id(ctx.author.id)
+        other_player = [x for x in game.players if x.discord_id != ctx.author.id][0]
+
+        proposed_tie_player.proposed_tie = True
+
+        if proposed_tie_player.proposed_tie and other_player.proposed_tie:
+
+            game.ongoing = False
+
+            await ctx.send(f"**Admiral:anchor:<@!{proposed_tie_player.discord_id}> "
+                           f"and admiral:anchor:<@!{proposed_tie_player.discord_id}>"
+                           f" agreed to a tie!**")
+
+            self.delete_game(ctx, game)
+
+        else:
+
+            await ctx.send(f"**{ctx.author.mention} proposed a tie to <@!{other_player.discord_id}>**")
 
     @classmethod
     async def display(cls, ctx: Context, game: bb.BattleshipsGame):
@@ -289,13 +373,46 @@ class BattleshipsGameCog(commands.Cog):
         fleet_dis = game.display()
 
         await ctx.send(
-            content=f"**Its <@!{game.next.discord_id}>'s turn!(Opponent's fleet)**\n"
+            content=f"**Its <@!{game.current_round_player.discord_id}>'s turn!(Opponent's fleet:crossed_swords:)**\n"
                     f"{fleet_dis}"
         )
 
     @classmethod
-    async def conclude(cls, ctx: Context, game: bb.BattleshipsGame):
-        print("Done")  # TODO
+    def delete_game(cls, ctx: Context, game: bb.BattleshipsGame):
+
+        Game.occupied_channels.remove(ctx.channel.id)
+        del cls._channel_to_game[str(ctx.channel.id)]
+
+        for player in game.players:
+
+            Player.occupied_players.remove(player.discord_id)
+            del cls._player_to_game[str(player.discord_id)]
+
+        del game
+
+    @bchallenge.error
+    async def bchallenge_error(self, ctx: Context, error: Exception):
+
+        prefix = get_prefix(self.client, ctx)
+
+        if isinstance(error, commands.MissingRequiredArgument):
+
+            await ctx.reply("**You need to specify the user!\n"
+                            f"Example: {prefix}bchallenge @user**")
+
+        elif isinstance(error, commands.UserNotFound):
+
+            await ctx.reply("**User does not exist or could not be found!\n"
+                            f"Example: {prefix}bchallenge @user**")
+
+    @s.error
+    async def s_error(self, ctx: Context, error: Exception):
+        prefix = get_prefix(self.client, ctx)
+
+        if isinstance(error, commands.MissingRequiredArgument):
+
+            await ctx.reply("**You need to specify the coordinates!\n"
+                            f"Example: {prefix}bchallenge @user**")
 
 
 def setup(client):

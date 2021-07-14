@@ -99,9 +99,9 @@ class BattleshipsPlayer(Player):
                 orientation = random.choice(["horizontal", "vertical"])
 
                 if orientation == "vertical":
-                    adjust = 10  # next vertical element
+                    adjust = 10  # current_round_player vertical element
                 else:
-                    adjust = 1  # next horizontal element
+                    adjust = 1  # current_round_player horizontal element
 
                 minus_edge = core  # upper edge or left edge depending on orientation
                 plus_edge = core  # lower edge or right edge depending on orientation
@@ -160,7 +160,7 @@ class BattleshipsPlayer(Player):
 class BattleshipsGame(Game):
 
     _NUMBER_OF_STARTING_SHIPS = 17
-    _TIMEOUT = 60  # seconds
+    TIMEOUT = 120  # seconds
 
     _row_to_number: dict[str, int] = {  # convert row  to number (ex. b -> 10)
         "a": 0, "b": 10, "c": 20, "d": 30, "e": 40, "f": 50, "g": 60, "h": 70, "i": 80, "j": 90
@@ -172,7 +172,7 @@ class BattleshipsGame(Game):
         self.player_ids: list[int] = players
         self.players = [BattleshipsPlayer(self.player_ids[0]), BattleshipsPlayer(self.player_ids[1])]
 
-        self.next = self.players[0]
+        self.current_round_player = self.players[0]
         self.winner: [BattleshipsPlayer, None] = None
 
         self.timer: float = 0  # keep track of time between rounds
@@ -180,18 +180,18 @@ class BattleshipsGame(Game):
         self.total_rounds: int = 0
         self.ongoing = False
 
-    def other_player(self):
-        return self.players[0] if self.next != self.players[0] else self.players[1]
+    def next_player(self):
+        return self.players[0] if self.current_round_player != self.players[0] else self.players[1]
 
     def next_round(self):
         self.total_rounds += 1
         self.timer = time()
-        self.next = self.other_player()
+        self.current_round_player = self.next_player()
 
     def display(self, discord_id: [int, None] = None, view_opponent_fleet: bool = True) -> str:
 
         if discord_id is None:
-            player = self.other_player()
+            player = self.next_player()
         else:
             player = self.get_player_by_id(discord_id)
 
@@ -228,22 +228,19 @@ class BattleshipsGame(Game):
         return txt_display
 
     def check_win(self) -> bool:
-        if self.next.kills >= 17:
+        if self.current_round_player.kills >= 17:
             return True
 
         return False
 
-    def timeout(self) -> bool:
-        return time() - self.timer > self._TIMEOUT
-
     def is_turn(self, discord_id: int) -> bool:
-        return discord_id == self.next.discord_id
+        return discord_id == self.current_round_player.discord_id
 
     def shoot(self, row: str, column: int) -> tuple[Tiles, bool]:
 
         position = self._row_to_number[row] + column
 
-        other_player = self.other_player()
+        other_player = self.next_player()
 
         hit = other_player.fleet[position]
 
@@ -251,7 +248,7 @@ class BattleshipsGame(Game):
 
         if isinstance(hit, Ship):
 
-            self.next.kills += 1
+            self.current_round_player.kills += 1
 
             destroyed = hit.hit()
 
@@ -282,6 +279,3 @@ class BattleshipsGame(Game):
 
     def get_player_by_id(self, discord_id: int) -> BattleshipsPlayer:
         return self.players[0] if discord_id == self.players[0].discord_id else self.players[1]
-
-    def conclude(self):
-        pass
