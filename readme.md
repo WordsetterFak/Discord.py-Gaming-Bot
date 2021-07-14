@@ -3,7 +3,7 @@
     which includes various minigames!🎮
 
 ## Game List 📜:
-    *-Battleships(Completed) 🚢
+    -Battleships(Completed) 🚢
     -TicTacToe(WIP) ❌
     -Uno(Planned) 🎴
     +More ➕
@@ -32,5 +32,4 @@
 
 ## Images🖼️:
 ![ScreenShot](https://github.com/Wordsetter0/Discord.py-Gaming-Bot/blob/master/images/repo-images/bbshipimage1.png)
-
- 
+![ScreenShot](https://github.com/Wordsetter0/Discord.py-Gaming-Bot/blob/master/images/repo-images/bbshipimage3.png)
