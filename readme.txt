@@ -4,7 +4,7 @@ Game List 📜:
     -Battleships(WIP) 🚢
     -Uno(Planned) 🎴
     -TicTacToe ❌
-    +More
+    +More ➕
 
 Requirements:
     aiohttp==3.7.4.post0
@@ -20,3 +20,9 @@ Requirements:
 
 Pip:
     pip install discord
+
+Installation:
+    git clone https://github.com/Wordsetter0/Discord.py-Gaming-Bot
+
+Usage:
+    Plug in your token in main.py (TOKEN variable) and you should be good to go(after installing dependencies)
