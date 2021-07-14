@@ -25,4 +25,4 @@ Installation:
     git clone https://github.com/Wordsetter0/Discord.py-Gaming-Bot
 
 Usage:
-    Plug in your token in main.py (TOKEN variable) and you should be good to go(after installing dependencies)
+    Plug in your token in TOKEN.txt and you should be good to go(after installing dependencies)
