@@ -236,7 +236,7 @@ class BattleshipsGameCog(commands.Cog):
         )
 
     @commands.command(aliases=["Timeout", "TIMEOUT", "tIMEOUT"])
-    async def timeout(self, ctx: Context):
+    async def btimeout(self, ctx: Context):
 
         try:  # TODO
 
@@ -260,12 +260,28 @@ class BattleshipsGameCog(commands.Cog):
             return
 
     @commands.command()
-    async def bsurrender(self):
-        pass  # TODO
+    async def bsurrender(self, ctx: Context):
+
+        try:  # TODO
+
+            game = self._player_to_game[str(ctx.author.id)]
+
+        except KeyError:
+
+            await ctx.reply("**You have not joined any Battleships game!**")
+            return
 
     @commands.command()
-    async def btie(self):
-        pass  # TODO
+    async def btie(self, ctx: Context):
+
+        try:  # TODO
+
+            game = self._player_to_game[str(ctx.author.id)]
+
+        except KeyError:
+
+            await ctx.reply("**You have not joined any Battleships game!**")
+            return
 
     @classmethod
     async def display(cls, ctx: Context, game: bb.BattleshipsGame):
