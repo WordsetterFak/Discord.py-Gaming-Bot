@@ -6,7 +6,7 @@
     -Battleships(Completed) 🚢
     -TicTacToe(WIP) ❌
     -Uno(Planned) 🎴
-    +More ➕
+    -More ➕
 
 ## Requirements🖥️:
     aiohttp==3.7.4.post0
