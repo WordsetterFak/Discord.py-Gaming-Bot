@@ -1,12 +1,14 @@
-An open source discord.py bot with various discord minigames 🎮
+## Description 📝:
+    An open source discord-py bot, made in python,
+    which includes various minigames!🎮
 
-Game List 📜:
-    -Battleships 🚢
+## Game List 📜:
+    -Battleships(Completed) 🚢
     -TicTacToe(WIP) ❌
     -Uno(Planned) 🎴
     +More ➕
 
-Requirements:
+## Requirements🖥️:
     aiohttp==3.7.4.post0
     async-timeout==3.0.1
     attrs==21.2.0
@@ -18,11 +20,14 @@ Requirements:
     typing-extensions==3.10.0.0
     yarl==1.6.3
 
-Pip:
+## Pip🐍:
     pip install discord
 
-Installation:
+## Installation📥:
     git clone https://github.com/Wordsetter0/Discord.py-Gaming-Bot
 
-Usage:
-    Plug in your token in TOKEN.txt and you should be good to go(after installing dependencies)
+## Usage⚙️:
+    Type in your token in TOKEN.txt and you should be good to go
+    Default bot image is provided in bot/boticon.png
+    
+ 
