@@ -32,5 +32,4 @@
 
 ## Images🖼️:
 ![ScreenShot](https://github.com/Wordsetter0/Discord.py-Gaming-Bot/blob/master/images/repo-images/bbshipimage1.png)
-
- 
+![ScreenShot](https://github.com/Wordsetter0/Discord.py-Gaming-Bot/blob/master/images/repo-images/bbshipimage3.png)
