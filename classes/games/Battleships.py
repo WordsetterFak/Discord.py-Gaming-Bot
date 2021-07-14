@@ -176,15 +176,12 @@ class BattleshipsGame(Game):
         self.winner: [BattleshipsPlayer, None] = None
 
         self.timer: float = 0  # keep track of time between rounds
-        self.total_time: float = time()
-        self.total_rounds: int = 0
         self.ongoing = False
 
     def next_player(self):
         return self.players[0] if self.current_round_player != self.players[0] else self.players[1]
 
     def next_round(self):
-        self.total_rounds += 1
         self.timer = time()
         self.current_round_player = self.next_player()
 

@@ -12,7 +12,7 @@ import asyncio
 
 class BattleshipsGameCog(commands.Cog):
 
-    _player_to_game: dict[str, bb.BattleshipsGame] = {}  # allows player to use some commands in dms
+    _player_to_game: dict[str, bb.BattleshipsGame] = {}  # allows player to use some commands outside the channel
     _channel_to_game: dict[str, bb.BattleshipsGame] = {}
 
     def __init__(self, client: Client):
