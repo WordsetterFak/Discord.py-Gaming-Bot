@@ -31,7 +31,6 @@
     Default bot image is provided in bot/boticon.png
 
 ## Images🖼️:
-![Markdown Logo]
-(https://github.com/Wordsetter0/Discord.py-Gaming-Bot/blob/master/images/repo-images/bbshipimage1.png)
+![ScreenShot](https://github.com/Wordsetter0/Discord.py-Gaming-Bot/blob/master/images/repo-images/bbshipimage1.png)
 
  
