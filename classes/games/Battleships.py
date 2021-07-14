@@ -79,6 +79,8 @@ class BattleshipsPlayer(Player):
         self.kills: int = 0
         self.rerolls: int = 3
         self.fleet: list[Tiles] = self.build_fleet()
+        self.visible_fleet: list[Tiles] = [Water()] * 100  # this is the fleet that the other player will be able to see
+        self.proposed_tie: bool = False
 
     def build_fleet(self):
 
@@ -186,12 +188,12 @@ class BattleshipsGame(Game):
         self.timer = time()
         self.next = self.other_player()
 
-    def display(self, discord_id: [int, None] = None) -> str:
+    def display(self, discord_id: [int, None] = None, view_opponent_fleet: bool = True) -> str:
 
         if discord_id is None:
-            discord_id = self.other_player().discord_id
-
-        player = self.get_player_by_id(discord_id)
+            player = self.other_player()
+        else:
+            player = self.get_player_by_id(discord_id)
 
         row_to_emoji: tuple = (
             ":regional_indicator_a:", ":regional_indicator_b:", ":regional_indicator_c:",
@@ -207,17 +209,21 @@ class BattleshipsGame(Game):
 
         txt_display = ""
 
+        if view_opponent_fleet:
+            fleet = player.visible_fleet
+        else:
+            fleet = player.fleet
+
         for emoji in column_to_emoji:
             txt_display += emoji
 
         for i in range(10):
 
-            txt_display += "\n"
-            txt_display += row_to_emoji[i]
+            txt_display += f"\n{row_to_emoji[i]}"
 
             for j in range(10):
 
-                txt_display += f"{player.fleet[i * 10 + j]}"
+                txt_display += f"{fleet[i * 10 + j]}"
 
         return txt_display
 
@@ -233,26 +239,31 @@ class BattleshipsGame(Game):
     def is_turn(self, discord_id: int) -> bool:
         return discord_id == self.next.discord_id
 
-    def shoot(self, row: str, column: int) -> tuple[str, bool]:
+    def shoot(self, row: str, column: int) -> tuple[Tiles, bool]:
 
         position = self._row_to_number[row] + column
 
         other_player = self.other_player()
 
         hit = other_player.fleet[position]
-        hit_name = str(hit)
+
         destroyed = False
 
         if isinstance(hit, Ship):
 
+            self.next.kills += 1
+
             destroyed = hit.hit()
+
             other_player.fleet[position] = ExplodedShip()
+            other_player.visible_fleet[position] = ExplodedShip()
 
         elif isinstance(hit, Water):
 
             other_player.fleet[position] = DisturbedWater()
+            other_player.visible_fleet[position] = DisturbedWater()
 
-        return hit_name, destroyed
+        return hit, destroyed
 
     def change_fleet(self, discord_id: int) -> int:
 

@@ -6,12 +6,12 @@ from discord import Guild
 import json
 
 
-TOKEN = "TOKEN"  # discord bot TOKEN goes here
+TOKEN = "ODY0MjIxMDAxNDMyNjk0ODA0.YOyShw.cnRGrX0T6WHF702LQuXRHaNJozw"  # discord bot TOKEN goes here
 
 
 def get_prefix(bot_obj, message: Context) -> str:
     try:
-        with open("data/bot/prefixes.json", 'r') as f:
+        with open("bot/prefixes.json", 'r') as f:
             prefixes = json.load(f)
         return prefixes[str(message.guild.id)]
     except AttributeError:
@@ -40,23 +40,23 @@ async def on_command_error(ctx: Context, error: Exception):
 
 @client.event
 async def on_guild_join(guild: Guild):
-    with open("data/bot/prefixes.json", 'r') as f:
+    with open("bot/prefixes.json", 'r') as f:
         prefixes = json.load(f)
 
     prefixes[str(guild.id)] = "!"
 
-    with open("data/bot/prefixes.json", 'w') as f:
+    with open("bot/prefixes.json", 'w') as f:
         json.dump(prefixes, f, indent=4)
 
 
 @client.event
 async def on_guild_remove(guild: Guild):
-    with open("data/bot/prefixes.json", 'r') as f:
+    with open("bot/prefixes.json", 'r') as f:
         prefixes = json.load(f)
 
     prefixes.pop(str(guild.id))
 
-    with open("data/bot/prefixes.json", 'w') as f:
+    with open("bot/prefixes.json", 'w') as f:
         json.dump(prefixes, f, indent=4)
 
 
@@ -67,12 +67,12 @@ async def prefix(ctx: Context, new_prefix: str):
         await ctx.reply("**You cannot change the prefix outside of a server!**")
         return
 
-    with open("data/bot/prefixes.json", 'r') as f:
+    with open("bot/prefixes.json", 'r') as f:
         prefixes = json.load(f)
 
     prefixes[str(ctx.guild.id)] = new_prefix
 
-    with open("data/bot/prefixes.json", 'w') as f:
+    with open("bot/prefixes.json", 'w') as f:
         json.dump(prefixes, f, indent=4)
 
     await ctx.send(f"**Prefix changed to {new_prefix}**")

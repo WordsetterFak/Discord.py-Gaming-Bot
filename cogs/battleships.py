@@ -3,15 +3,16 @@ from discord.ext.commands import Context
 from discord import Client, User, Embed, Colour
 from classes.Player import Player
 from classes.Game import Game
-from classes.games.Battleships import BattleshipsGame
+import classes.games.Battleships as bb
 from time import time
+from re import search as re_search
 import asyncio
 
 
-class BattleshipsCog(commands.Cog):
+class BattleshipsGameCog(commands.Cog):
 
-    _player_to_game: dict[str, BattleshipsGame] = {}  # allows player to change fleet in dms
-    _channel_to_game: dict[str, BattleshipsGame] = {}
+    _player_to_game: dict[str, bb.BattleshipsGame] = {}  # allows player to change fleet in dms
+    _channel_to_game: dict[str, bb.BattleshipsGame] = {}
 
     def __init__(self, client: Client):
         self.client: Client = client
@@ -21,6 +22,10 @@ class BattleshipsCog(commands.Cog):
 
         if ctx.guild is None:
             await ctx.reply("**You cannot challenge someone outside of a server**")
+            return
+
+        if ctx.author.id == user.id:
+            await ctx.reply("**You cannot challenge yourself!**")
             return
 
         if ctx.channel.id in Game.occupied_channels:
@@ -83,19 +88,30 @@ class BattleshipsCog(commands.Cog):
                 await ctx.reply(f"**{user.mention} joined a game, before the challenge was accepted!**")
                 return
 
-            Player.occupied_players.append(user.id)
-            Player.occupied_players.append(ctx.author.id)
-            Game.occupied_channels.append(ctx.channel.id)
+            players = [ctx.author.id, user.id]
 
-            game = BattleshipsGame([ctx.author.id, user.id])
+            game = bb.BattleshipsGame(players)
+
+            Game.occupied_channels.append(ctx.channel.id)
             self._channel_to_game[str(ctx.channel.id)] = game
-            self._player_to_game[str(ctx.author.id)] = game
-            self._player_to_game[str(user.id)] = game
+
+            for player in players:
+
+                Player.occupied_players.append(player)
+                self._player_to_game[str(player)] = game
+
+                display = game.display(discord_id=player, view_opponent_fleet=False)
+
+                player_discord = await self.client.fetch_user(player)
+
+                await player_discord.send(
+                    content=f"Your fleet!(3 rerolls available)\n{display}"
+                )
 
             await ctx.send(
                 content=f"{ctx.author.mention}|{user.mention}\n"
                         f"**Game will begin in 20 seconds, in the meantime you can change your fleet up to 3 times,"
-                        f" if you are not satisfied.**"
+                        f" if you are not satisfied with your current fleet.**"
             )
 
             await asyncio.sleep(20)
@@ -110,8 +126,86 @@ class BattleshipsCog(commands.Cog):
             await ctx.reply(f"**{user.mention} turned down/did not respond the challenge!**")
 
     @commands.command(aliases=["S", "shoot", "SHOOT", "Shoot", "sHOOT"])
-    async def s(self, pos: str):
-        pass  # TODO
+    async def s(self, ctx: Context, pos: str):
+
+        try:
+
+            game = self._player_to_game[str(ctx.author.id)]
+
+        except KeyError:
+
+            await ctx.reply("**You have not joined any Battleships game!**")
+            return
+
+        pos = pos.lower()
+
+        if ctx.author.id != game.next.discord_id:
+
+            await ctx.reply("**It is not your turn!**")
+            return
+
+        elif len(pos) != 2:
+
+            await ctx.reply("**Invalid coordinates(wrong size)\n"
+                            "Example: a2**")
+            return
+
+        pattern1 = "[a-j]+[0-9]"
+        pattern2 = "[0-9]+[a-j]"
+
+        if re_search(pattern1, pos):
+
+            row = pos[0]
+            column = int(pos[1])
+
+        elif re_search(pattern2, pos):
+
+            row = pos[1]
+            column = int(pos[0])
+
+        else:
+
+            await ctx.reply("**Invalid coordinates(wrong format)\n"
+                            "Example: b6**")
+            return
+
+        hit, destroyed = game.shoot(row, column)
+
+        if isinstance(hit, bb.Ship):
+
+            if not destroyed:
+
+                await ctx.reply(f"**You hit a ship:boom:**")
+
+            else:
+
+                await ctx.reply(f"**You sunk the {hit.name}({hit.size}):boom:**")
+
+            if game.check_win():
+
+                await self.conclude(ctx, game)
+
+            else:
+
+                game.next_round()
+
+            await self.display(ctx, game)
+
+        elif isinstance(hit, bb.Water):
+
+            await ctx.reply(f"**You hit nothing:radio_button:**")
+
+            game.next_round()
+
+            await self.display(ctx, game)
+
+        elif isinstance(hit, bb.ExplodedShip):
+
+            await ctx.reply(f"**You hit {pos} before and hit a ship, please shoot a new square!**")
+
+        else:
+
+            await ctx.reply(f"**You hit {pos} before and hit nothing, please shoot a new square!**")
 
     @commands.command(aliases=["Breroll", "BREROLL", "bREROLL"])
     async def breroll(self, ctx: Context):
@@ -153,15 +247,40 @@ class BattleshipsCog(commands.Cog):
             await ctx.reply("**You have not joined any Battleships game!**")
             return
 
+    @commands.command()
+    async def myfleet(self, ctx: Context):
+
+        try:  # TODO
+
+            game = self._player_to_game[str(ctx.author.id)]
+
+        except KeyError:
+
+            await ctx.reply("**You have not joined any Battleships game!**")
+            return
+
+    @commands.command()
+    async def bsurrender(self):
+        pass  # TODO
+
+    @commands.command()
+    async def btie(self):
+        pass  # TODO
+
     @classmethod
-    async def display(cls, ctx: Context, game: BattleshipsGame):
+    async def display(cls, ctx: Context, game: bb.BattleshipsGame):
 
         fleet_dis = game.display()
 
         await ctx.send(
-            content=f"Its <@!{game.next.discord_id}>'s turn!\n{fleet_dis}"
+            content=f"**Its <@!{game.next.discord_id}>'s turn!(Opponent's fleet)**\n"
+                    f"{fleet_dis}"
         )
+
+    @classmethod
+    async def conclude(cls, ctx: Context, game: bb.BattleshipsGame):
+        print("Done")  # TODO
 
 
 def setup(client):
-    client.add_cog(BattleshipsCog(client))
+    client.add_cog(BattleshipsGameCog(client))
