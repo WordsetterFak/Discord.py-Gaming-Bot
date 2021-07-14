@@ -412,7 +412,7 @@ class BattleshipsGameCog(commands.Cog):
         if isinstance(error, commands.MissingRequiredArgument):
 
             await ctx.reply("**You need to specify the coordinates!\n"
-                            f"Example: {prefix}bchallenge @user**")
+                            f"Example: {prefix}s c8**")
 
 
 def setup(client):
