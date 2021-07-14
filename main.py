@@ -122,4 +122,9 @@ async def bot_credits(ctx: Context):
     pass
 
 
+@client.command()
+async def ping(ctx: Context):
+    await ctx.reply(f"**Latency: {round(client.latency * 1000)} ms**")
+
+
 client.run(TOKEN)  # bot loop

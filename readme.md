@@ -1,6 +1,6 @@
 ## Description 📝:
     An open source discord-py bot, made in python,
-    which includes various minigames!🎮
+    which includes various minigames!🎮 (Scroll down for images!)
 
 ## Game List 📜:
     -Battleships(Completed) 🚢
