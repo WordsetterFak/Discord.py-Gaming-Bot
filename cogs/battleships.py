@@ -288,6 +288,11 @@ class BattleshipsGameCog(commands.Cog):
 
             self.delete_game(ctx, game)
 
+        else:
+
+            await ctx.reply(f"**<@!{game.next_player().discord_id}> has still ~{game.TIMEOUT - (time() - game.timer)}"
+                            f" seconds to play!**")
+
     @commands.command(aliases=["Myfleet", "MYFLEET", "mYFLEET"])
     async def myfleet(self, ctx: Context):
 
@@ -365,7 +370,8 @@ class BattleshipsGameCog(commands.Cog):
 
         else:
 
-            await ctx.send(f"**{ctx.author.mention} proposed a tie to <@!{other_player.discord_id}>**")
+            await ctx.send(f"**Admiral:anchor:<@!{proposed_tie_player.discord_id}> "
+                           f"proposed a tie to admiral:anchor:<@!{other_player}>**")
 
     @classmethod
     async def display(cls, ctx: Context, game: bb.BattleshipsGame):
