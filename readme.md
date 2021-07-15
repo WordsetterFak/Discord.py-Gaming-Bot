@@ -6,6 +6,7 @@
     -Battleships(Completed) 🚢
     -TicTacToe(WIP) ❌
     -Uno(Planned) 🎴
+    -Minesweeper(Planned) 💥
     -More ➕
 
 ## Requirements🖥️:
