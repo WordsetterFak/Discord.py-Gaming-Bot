@@ -282,7 +282,7 @@ class BattleshipsGameCog(commands.Cog):
 
             game.current_round_player = game.next_player()
 
-            await ctx.send(f"**Admiral:anchor: <@!{game.current_round_player}> defeated "
+            await ctx.send(f"**Admiral:anchor: <@!{game.current_round_player.discord_id}> defeated "
                            f"admiral:anchor: <@!{game.next_player().discord_id}> due to "
                            f"the inactivity of the latter!**")
 
