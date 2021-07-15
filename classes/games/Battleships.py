@@ -160,7 +160,7 @@ class BattleshipsPlayer(Player):
 class BattleshipsGame(Game):
 
     _NUMBER_OF_STARTING_SHIPS = 17
-    TIMEOUT = 120  # seconds
+    TIMEOUT = 120  # seconds, if you change this make sure to change it in the bchallenge command embed
 
     _row_to_number: dict[str, int] = {  # convert row  to number (ex. b -> 10)
         "a": 0, "b": 10, "c": 20, "d": 30, "e": 40, "f": 50, "g": 60, "h": 70, "i": 80, "j": 90

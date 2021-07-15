@@ -1,5 +1,6 @@
 from classes.Game import Game
 from classes.Player import Player
+from time import time
 import random
 
 
@@ -32,7 +33,7 @@ class TicTacToeBoard:
 
         for i in range(0, 9, 3):
 
-            if self.board[i:i+3]:
+            if self.board[i:i+3] == [symbol] * 3:
 
                 return True
 
@@ -68,7 +69,7 @@ class TicTacToeBoard:
 
         number_to_emoji: dict[str, str] = {
             "0": ":zero:", "1": ":one:", "2": ":two:", "3": ":three:", "4": ":four:",
-            "5": ":five:", "6": ":six:", "7": ":seven:", "8": ":eight:"
+            "5": ":five:", "6": ":six:", "7": ":seven:", "8": ":eight:", "9": ":nine:"
         }
 
         txt = ""
@@ -98,6 +99,8 @@ class TicTacToeBoard:
 
 class TicTacToeGame(Game):
 
+    TIMEOUT = 100  # if you change this make sure to change it in the tchallenge command to
+
     def __init__(self, player_ids: list[int]):
         super().__init__("TicTacToe", 2, 2)
 
@@ -126,6 +129,10 @@ class TicTacToeGame(Game):
 
     def next_player(self):
         return self.players[0] if self.players[0] != self.current_round_player else self.players[1]
+
+    def next_round(self):
+        self.timer = time()
+        self.current_round_player = self.next_player()
 
     def get_player_by_id(self, discord_id: int):
         return self.players[0] if self.players[0].discord_id == discord_id else self.players[1]
