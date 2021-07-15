@@ -12,18 +12,15 @@ TOKEN = open("TOKEN.txt", "r").read()  # discord bot TOKEN goes here
 def get_prefix(bot_obj, message: Context) -> str:
 
     try:
-
         with open("bot/prefixes.json", 'r') as f:
             prefixes = json.load(f)
 
         return prefixes[str(message.guild.id)]
 
     except AttributeError:
-
         return "!"
 
     except KeyError:
-
         return "!"
 
 
@@ -96,8 +93,14 @@ async def prefix(ctx: Context, new_prefix: str):
 @prefix.error
 async def prefix_error(ctx: Context, error: Exception):
 
-    await ctx.reply("**Incorrect usage!\n"
-                    f"Example: {get_prefix(client, ctx)}prefix .**")
+    if isinstance(error, commands.MissingRequiredArgument):
+
+        await ctx.reply("**Incorrect usage!\n"
+                        f"Example: {get_prefix(client, ctx)}prefix .**")
+
+    elif isinstance(error, commands.MissingPermissions):
+
+        await ctx.reply("**You do not have the permission to change the server prefix!**")
 
 
 client.run(TOKEN)  # bot loop

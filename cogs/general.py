@@ -28,7 +28,7 @@ class GeneralCommandsCog(commands.Cog):
         await ctx.reply(embed=embed)
 
     @commands.command(aliases=["credits"])
-    async def bot_credits(self, ctx: Context):
+    async def contributors(self, ctx: Context):
         pass  # for contributors, etc
 
     @commands.command()

@@ -5,7 +5,7 @@
 ## Game List 📜:
     -Battleships(Completed) 🚢
     -TicTacToe(Completed) ❌
-    -Minesweeper(Planned) 💥
+    -Minesweeper(WIP) 💥
     -Uno(Planned) 🎴
     -More ➕
 
