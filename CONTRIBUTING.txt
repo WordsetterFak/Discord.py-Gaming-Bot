@@ -1,0 +1,8 @@
+The simplest way to contribute is to spot typos and open an issue
+You could also try the bot and see if you encounter any bugs(or typos), if you do please open an issue
+You can provide feedback on the bot, it will be appreciated
+If you can code in python and know some discord-py:
+    -You can fix bugs in preexisting games
+    -Contact me and recommend a new game you would like to personally add
+
+Thanks in advance!
