@@ -100,31 +100,4 @@ async def prefix_error(ctx: Context, error: Exception):
                     f"Example: {get_prefix(client, ctx)}prefix .**")
 
 
-@client.command(aliases=["INFO", "iNFO", "Info"])
-async def info(ctx: Context):
-
-    embed = Embed(
-        title="About this Botℹ️",
-        colour=Colour.teal()
-    )
-
-    embed.add_field(
-        name="Text📝",
-        value="This is an open source bot available at https://github.com/Wordsetter0/Discord.py-Gaming-Bot ,"
-              " created by Wordsetter(WIP)"
-    )
-
-    await ctx.reply(embed=embed)
-
-
-@client.command(aliases=["credits"])
-async def bot_credits(ctx: Context):
-    pass
-
-
-@client.command()
-async def ping(ctx: Context):
-    await ctx.reply(f"**Latency: {round(client.latency * 1000)} ms**")
-
-
 client.run(TOKEN)  # bot loop
