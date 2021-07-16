@@ -5,9 +5,7 @@
 ## Game List 📜:
     -Battleships(Completed) 🚢
     -TicTacToe(Completed) ❌
-    -Minesweeper(WIP) 💥
-    -Uno(Planned) 🎴
-    -More ➕
+    -Project has been put on freeze!
 
 ## Requirements🖥️:
     aiohttp==3.7.4.post0
