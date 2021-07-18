@@ -1,4 +1,5 @@
 ## Description 📝:
+    *Project has been put on freeze!
     An open source discord-py bot, made in python,
     which includes various minigames!🎮 (Scroll down for images!)
 
