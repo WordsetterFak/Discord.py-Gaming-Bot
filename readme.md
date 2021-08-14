@@ -5,7 +5,7 @@
 ## Game List 📜:
     -Battleships(Completed) 🚢
     -TicTacToe(Completed) ❌
-    -UNO(WIP) 🟦
+    -UNO(WIP) 🎴
 
 ## Requirements🖥️:
     aiohttp==3.7.4.post0
