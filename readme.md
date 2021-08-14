@@ -1,12 +1,11 @@
 ## Description 📝:
-    *Project has been put on freeze!
     An open source discord-py bot, made in python,
     which includes various minigames!🎮 (Scroll down for images!)
 
 ## Game List 📜:
     -Battleships(Completed) 🚢
     -TicTacToe(Completed) ❌
-    -Project has been put on freeze!
+    -UNO(WIP) 🟦
 
 ## Requirements🖥️:
     aiohttp==3.7.4.post0
