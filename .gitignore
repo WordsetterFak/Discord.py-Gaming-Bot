@@ -1,4 +1,6 @@
+# Always add any file that you don't want to push to github here
 .idea
 __pycache__
 test.py
 venv
+TOKEN.txt

@@ -30,5 +30,5 @@
     Default bot image is provided in bot/boticon.png
 
 ## Images🖼️:
-![ScreenShot](https://github.com/Wordsetter0/Discord.py-Gaming-Bot/blob/master/images/repo-images/bbshipimage1.png)
-![ScreenShot](https://github.com/Wordsetter0/Discord.py-Gaming-Bot/blob/master/images/repo-images/bbshipimage3.png)
+![ScreenShot](https://github.com/Wordsetter0/Discord.py-Gaming-Bot/blob/master/images/battleshipsimages/bbshipimage1.png)
+![ScreenShot](https://github.com/Wordsetter0/Discord.py-Gaming-Bot/blob/master/images/battleshipsimages/bbshipimage3.png)
