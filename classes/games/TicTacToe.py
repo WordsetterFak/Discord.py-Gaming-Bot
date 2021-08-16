@@ -20,7 +20,7 @@ class TicTacToePlayer(Player):
 
         else:
 
-            return "🔵"
+            return "🟢"
 
 
 class TicTacToeBoard:
@@ -82,7 +82,7 @@ class TicTacToeBoard:
 
                 if self.board[pos] == "o":
 
-                    txt += "🔵"
+                    txt += "🟢"
 
                 elif self.board[pos] == "x":
 
