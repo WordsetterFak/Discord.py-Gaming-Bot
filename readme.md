@@ -1,5 +1,5 @@
 ## Description 📝:
-    An open source discord-py bot, made in python,
+    An open source discord-py bot, made in python 3.9,
     which includes various minigames!🎮 (Scroll down for images!)
 
 ## Game List 📜:
@@ -32,3 +32,4 @@
 ## Images🖼️:
 ![ScreenShot](https://github.com/Wordsetter0/Discord.py-Gaming-Bot/blob/master/images/battleshipsimages/bbshipimage1.png)
 ![ScreenShot](https://github.com/Wordsetter0/Discord.py-Gaming-Bot/blob/master/images/battleshipsimages/bbshipimage3.png)
+![Screenshot](https://github.com/Wordsetter0/Discord.py-Gaming-Bot/blob/master/images/tictactoeimages/tictactoeimage1.png)
