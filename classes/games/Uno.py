@@ -1,6 +1,7 @@
 from classes.Game import Game
 from classes.Player import Player
-from discord import User, Message
+from discord import User
+from time import time
 import random
 
 
@@ -138,23 +139,46 @@ for color in ('b', 'y', 'g', 'r'):
 
 class UnoPlayer(Player):
 
-    def __init__(self, discord_id: int, discord_user: User, interface: Message):
+    def __init__(self, discord_id: int, discord_user: User):
         super().__init__(discord_id)
         self.hand: list[UnoCard] = []
         self.discord_user = discord_user
-        self.interface = interface
+        self.tie = False
+
+    def display_hand(self) -> str:
+        display = ""
+        card_counts: dict[str, int] = {}
+
+        for card in self.hand:
+
+            try:
+
+                card_counts[card.symbol] += 1
+
+            except KeyError:
+
+                card_counts[card.symbol] = 1
+
+        for card in self.hand:
+
+            display += f"**{card.display()} ({card.symbol})**x{card_counts[card.symbol]}"
+
+        return display
 
 
 class UnoGame(Game):
 
     def __init__(self, players: list[UnoPlayer]):
         super().__init__("Uno", 4, 2)
+
         self.card_pickups = 0  # from +2/+4 cards
         self.players: list[UnoPlayer] = players
         self.deck: list[UnoCard] = self.new_deck()
         self.movement = 1  # 1 by default, multiplied by -1 every time a reverse card is dropped
         self.current_pos = 0
         self.ongoing = False
+        self.timer = 0
+        self.last_card: UnoCard or None = None
 
     def new_deck(self) -> list[UnoCard]:
         new_deck = default_deck.copy()
@@ -165,4 +189,51 @@ class UnoGame(Game):
         return self.players[self.current_pos].discord_id
 
     def begin_game(self):
-        pass
+
+        for player in self.players:  # shuffle cards to players (7 each)
+
+            for _ in range(7):
+
+                player.hand.append(self.deck[0])
+                self.deck.pop(0)
+
+        self.last_card = self.deck[0]
+        self.deck.pop(0)
+
+    def next_round(self):
+        self.timer = time()
+
+        if self.current_pos + 1 == len(self.players) and self.movement == 1:
+            self.current_pos = 0
+
+        elif self.current_pos == 0 and self.movement == -1:
+            self.current_pos = len(self.players) - 1
+
+        else:
+            self.current_pos += self.movement
+
+    def get_queue(self) -> list:
+        queue = []
+        current_index = self.current_pos
+
+        for _ in self.players:
+
+            try:
+
+                queue.append(self.players[current_index])
+
+            except IndexError:
+
+                if self.movement == 1:
+
+                    queue.append(self.players[0])
+                    current_index = 0
+
+                else:
+
+                    queue.append(self.players[len(self.players) - 1])
+                    current_index = len(self.players) - 1
+
+            current_index += 1 * self.movement
+
+        return queue
