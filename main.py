@@ -2,11 +2,11 @@ from discord.ext.commands.context import Context
 from discord.ext.commands import has_permissions
 from discord.ext import commands
 from os import listdir
-from discord import Guild, Embed, Colour
+from discord import Guild
 import json
 
 
-TOKEN = open("TOKEN.txt", "r").read()  # discord bot TOKEN goes here
+TOKEN = open("TOKEN.txt", 'r').read()  # discord bot TOKEN
 
 
 def get_prefix(bot_obj, message: Context) -> str:
@@ -18,10 +18,10 @@ def get_prefix(bot_obj, message: Context) -> str:
         return prefixes[str(message.guild.id)]
 
     except AttributeError:
-        return "!"
+        return '!'
 
     except KeyError:
-        return "!"
+        return '!'
 
 
 client = commands.Bot(command_prefix=get_prefix)
@@ -47,27 +47,19 @@ async def on_command_error(ctx: Context, error: Exception):
 
 
 @client.event
-async def on_guild_join(guild: Guild):
-
-    with open("bot/prefixes.json", 'r') as f:
-        prefixes = json.load(f)
-
-    prefixes[str(guild.id)] = "!"
-
-    with open("bot/prefixes.json", 'w') as f:
-        json.dump(prefixes, f, indent=4)
-
-
-@client.event
 async def on_guild_remove(guild: Guild):
 
     with open("bot/prefixes.json", 'r') as f:
         prefixes = json.load(f)
 
-    prefixes.pop(str(guild.id))
+    try:
+        prefixes.pop(str(guild.id))
 
-    with open("bot/prefixes.json", 'w') as f:
-        json.dump(prefixes, f, indent=4)
+        with open("bot/prefixes.json", 'w') as f:
+            json.dump(prefixes, f, indent=4)
+
+    except KeyError:
+        pass
 
 
 @client.command(aliases=["PREFIX", "Prefix", "pREFIX"])
@@ -77,6 +69,11 @@ async def prefix(ctx: Context, new_prefix: str):
     if ctx.guild is None:
 
         await ctx.reply("**You cannot change the prefix outside of a server!**")
+        return
+
+    if len(new_prefix) > 4:
+
+        await ctx.reply("**Prefix cannot be longer than 4 characters!**")
         return
 
     with open("bot/prefixes.json", 'r') as f:
