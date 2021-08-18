@@ -63,7 +63,16 @@ IMAGES: dict[str, str] = {
     "y<>": "https://cdn.discordapp.com/attachments/848488501335031870/848512601201311814/Screenshot_238.png",
 
     "+4": "https://cdn.discordapp.com/attachments/848488501335031870/848515484596961330/Screenshot_267.png",
-    "cc": "https://cdn.discordapp.com/attachments/848488501335031870/848515488030916658/Screenshot_266.png"
+    "cc": "https://cdn.discordapp.com/attachments/848488501335031870/848515488030916658/Screenshot_266.png",
+
+    "gcc": "https://cdn.discordapp.com/attachments/848488501335031870/848515488030916658/Screenshot_266.png",
+    "bcc": "https://cdn.discordapp.com/attachments/848488501335031870/848515488030916658/Screenshot_266.png",
+    "rcc": "https://cdn.discordapp.com/attachments/848488501335031870/848515488030916658/Screenshot_266.png",
+    "ycc": "https://cdn.discordapp.com/attachments/848488501335031870/848515488030916658/Screenshot_266.png",
+    "g+4": "https://cdn.discordapp.com/attachments/848488501335031870/848515484596961330/Screenshot_267.png",
+    "b+4": "https://cdn.discordapp.com/attachments/848488501335031870/848515484596961330/Screenshot_267.png",
+    "r+4": "https://cdn.discordapp.com/attachments/848488501335031870/848515484596961330/Screenshot_267.png",
+    "y+4": "https://cdn.discordapp.com/attachments/848488501335031870/848515484596961330/Screenshot_267.png"
 }
 
 
@@ -72,7 +81,7 @@ class UnoCard:
     def __init__(self, name: str, color: str, number: int, special=False, symbol=""):
         self.name = name
         self.color = color  # red, green, blue, yellow, black
-        self.number = number  # 0-9, -1 for non numbered colored cards and -2/-3 for wildcards
+        self.number = number  # 0-9, -1 for non numbered colored cards and -2/-3 for wildcards, -4 for color change cards
         self.image = IMAGES[name]
         self.special = special  # +2, reverse, skip turn cards and wild cards
 
@@ -85,7 +94,14 @@ class UnoCard:
     def display(self) -> str:
 
         if self.color != "black":
-            return f"{self.color.capitalize()} {self.symbol}"
+
+            if self.number != -4:
+
+                return f"{self.color.capitalize()} {self.symbol}"
+
+            else:
+
+                return self.color.capitalize()
 
         else:
 
@@ -119,7 +135,12 @@ all_cards: dict[str, UnoCard] = {
     "y<>": UnoCard("y<>", "yellow", -1, True, "<>"), "yx": UnoCard("y<>", "yellow", -1, True, "X"),
     "+4": UnoCard("+4", "black", -2, True), "cc": UnoCard("cc", "black", -3, True)
 }
-
+color_only_cards: dict[str, UnoCard] = {
+    "greencc": UnoCard("gcc", "green", -4), "green+4": UnoCard("g+4", "green", -4),
+    "bluecc": UnoCard("bcc", "blue", -4), "blue+4": UnoCard("b+4", "blue", -4),
+    "redcc": UnoCard("rcc", "red", -4), "red+4": UnoCard("r+4", "red", -4),
+    "yellowcc": UnoCard("ycc", "yellow", -4), "yellow+4": UnoCard("y+4", "yellow", -4)
+}
 
 default_deck: list[UnoCard] = []  # 76 Number Cards (19 each color), 24 Action cards(6 each color) and 8 wild cards
 
@@ -170,10 +191,11 @@ class UnoGame(Game):
 
     def __init__(self, players: list[UnoPlayer]):
         super().__init__("Uno", 4, 2)
+        random.shuffle(players)
 
         self.card_pickups = 0  # from +2/+4 cards
         self.players: list[UnoPlayer] = players
-        self.deck: list[UnoCard] = self.new_deck()
+        self._deck: list[UnoCard] = self.new_deck()
         self.movement = 1  # 1 by default, multiplied by -1 every time a reverse card is dropped
         self.current_pos = 0
         self.ongoing = False
@@ -185,34 +207,45 @@ class UnoGame(Game):
         random.shuffle(new_deck)
         return new_deck
 
-    def current_player(self) -> int:
-        return self.players[self.current_pos].discord_id
+    def current_player(self) -> UnoPlayer:
+        return self.players[self.current_pos]
 
-    def begin_game(self):
+    def deal_cards(self):
 
         for player in self.players:  # shuffle cards to players (7 each)
 
             for _ in range(7):
 
-                player.hand.append(self.deck[0])
-                self.deck.pop(0)
+                player.hand.append(self._deck[0])
+                self._deck.pop(0)
 
-        self.last_card = self.deck[0]
-        self.deck.pop(0)
+        self.last_card = self._deck[0]
+        self._deck.pop(0)
 
-    def next_round(self):
+    def next_round(self, steps=1):
         self.timer = time()
+        self.current_pos = self.step_to_player(distance=steps)
 
-        if self.current_pos + 1 == len(self.players) and self.movement == 1:
-            self.current_pos = 0
+    def step_to_player(self, distance: int) -> int:
+        """
+        Find the player after distance turns from the current one
+        """
+        pos = self.current_pos
 
-        elif self.current_pos == 0 and self.movement == -1:
-            self.current_pos = len(self.players) - 1
+        for _ in range(distance):
 
-        else:
-            self.current_pos += self.movement
+            if pos + 1 == len(self.players) and self.movement == 1:  # to avoid index errors in the future
+                pos = 0
 
-    def get_queue(self) -> list:
+            elif pos == 0 and self.movement == -1:
+                pos = len(self.players) - 1
+
+            else:
+                pos += self.movement
+
+        return pos
+
+    def get_queue(self) -> list[UnoPlayer]:
         queue = []
         current_index = self.current_pos
 
@@ -237,3 +270,25 @@ class UnoGame(Game):
             current_index += 1 * self.movement
 
         return queue
+
+    def take_card(self) -> UnoCard:
+
+        if len(self._deck) > 0:
+
+            top_card = self._deck[0]
+            self._deck.pop(0)
+            return top_card
+
+        self._deck = self.new_deck()
+
+        self.take_card()  # max recursions = 1
+
+    def get_player_by_id(self, discord_id: int) -> UnoPlayer:
+        """
+        Call this function after you have checked whether or not this player is part of this game
+        """
+        for player in self.players:
+
+            if player.discord_id == discord_id:
+
+                return player
