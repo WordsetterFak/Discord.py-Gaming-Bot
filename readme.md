@@ -1,3 +1,7 @@
+# Status 🧭
+    This Project will not no longer be developed/finished due to discord.py's ( main dependency ) discontinuation
+    and my personal lack of interest :(
+
 ## Description 📝:
     An open source discord-py bot, made in python 3.9,
     which includes various minigames!🎮 (Scroll down for images!)
